@@ -14,90 +14,11 @@ wagmi/viem e uno smart contract ERC-721 in Solidity.
 
 ---
 
-## Indice
-
-- [Demo](#demo)
-- [Stack tecnologico](#stack-tecnologico)
-- [Architettura](#architettura)
-- [Quick start](#quick-start)
-- [Configurazione](#configurazione)
-- [Scripts](#scripts)
-- [Smart contract](#smart-contract)
-- [Farcaster Frame](#farcaster-frame)
-- [Deploy su Vercel](#deploy-su-vercel)
-- [Roadmap](#roadmap)
-- [Licenza](#licenza)
-
----
-
 ## Demo
 
 - **Live**: https://boro-coatto-pariolino.vercel.app
 - **Smart contract**: [`0xfd40710B7D9ef3351Ea3891aA1Aa22BAEF9072B3`](https://sepolia.arbiscan.io/address/0xfd40710B7D9ef3351Ea3891aA1Aa22BAEF9072B3)
   su Arbitrum Sepolia.
-
----
-
-## Stack tecnologico
-
-| Area | Scelta | Perché |
-|------|--------|--------|
-| Framework | Next.js 14 (App Router) | Routing file-based, RSC, edge runtime per le immagini OG. |
-| Linguaggio | TypeScript strict | Type safety dal contratto al componente. |
-| Web3 | wagmi 2 + viem | API moderna e type-safe per Ethereum, SSR pronto. |
-| Wallets | Injected, Coinbase Wallet, WalletConnect | Copertura desktop/mobile senza vendor lock-in. |
-| Styling | TailwindCSS + CSS variables | Tema centralizzato, glassmorphism leggero. |
-| Mini App | `@farcaster/miniapp-sdk` | Integrazione con il feed Farcaster. |
-| Smart contract | Solidity 0.8.20 + OpenZeppelin | ERC-721 con tokenURI dinamico e proprietario. |
-
----
-
-## Architettura
-
-```
-src/
-├── app/
-│   ├── api/
-│   │   ├── frame/route.ts            # Endpoint POST/GET per il Farcaster Frame
-│   │   ├── frame/image/route.tsx     # OG image generata via Edge (next/og)
-│   │   └── nft/[tokenId]/route.ts    # Metadati ERC-721 (OpenSea-compatible)
-│   ├── frame/page.tsx                # Landing dedicata al Frame
-│   ├── .well-known/farcaster.json/   # Manifest Mini App
-│   ├── layout.tsx                    # Provider + metadata globali
-│   └── page.tsx                      # Stato del quiz (client component)
-├── components/
-│   ├── providers.tsx                 # Wagmi + React Query
-│   ├── wallet-button.tsx             # Connessione, switch chain e modal
-│   ├── mint-button.tsx               # Scrittura on-chain (writeContract)
-│   ├── step-shell.tsx                # Layout step + progress bar
-│   ├── dev-warnings.tsx              # Banner dev-only per config mancante
-│   ├── steps/                        # Hero, domanda generica, mint
-│   └── ui/                           # Button, Input, Progress
-├── lib/
-│   ├── env.ts                        # Lettura centralizzata delle env vars
-│   ├── persona.ts                    # Domande, scoring, mapping persona→NFT
-│   ├── contract.ts                   # Indirizzo + ABI del contratto
-│   └── utils.ts                      # Helpers (cn, shortAddress)
-└── styles/globals.css                # Token CSS + Tailwind base
-
-contracts/
-├── RomanPersonaNFT.sol               # ERC-721 con tokenURI on-chain
-├── RomanPersonaNFT.abi.json          # ABI consumato dal frontend
-└── deploy.js                         # Script di deploy (Hardhat)
-
-scripts/
-└── setup-contract.js                 # Configura baseImageURI/namePrefix
-```
-
-Punti chiave:
-
-- **Single source of truth** per le env: `src/lib/env.ts` evita di leggere
-  `process.env.*` sparso nei componenti.
-- **Persona logic isolata**: tutte le domande, i pesi e il mapping
-  persona→immagine vivono in `src/lib/persona.ts` e sono pure functions
-  facilmente testabili.
-- **Server-side metadata**: `/api/nft/[tokenId]` espone JSON conforme allo
-  standard OpenSea con cache `public, max-age=31536000, immutable`.
 
 ---
 
@@ -118,32 +39,17 @@ L'app è disponibile su <http://localhost:5173>.
 
 ---
 
-## Configurazione
+## Stack tecnologico
 
-Tutte le variabili sono opzionali in locale: l'app ha fallback ragionevoli.
-
-| Variabile | Scope | Descrizione |
-|-----------|-------|-------------|
-| `NEXT_PUBLIC_APP_URL` | client/server | URL pubblico dell'app (Frame, OG, metadata NFT). |
-| `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` | client | Project ID gratuito da [cloud.walletconnect.com](https://cloud.walletconnect.com). Senza, WalletConnect viene disabilitato (gli altri connector restano attivi). |
-| `NEXT_PUBLIC_CONTRACT_ADDRESS` | client | Override dell'indirizzo del contratto. |
-| `MINIAPP_NAME`, `MINIAPP_WEBHOOK_URL`, `BASE_ALLOWED_ADDRESSES` | server | Customizzazione del manifest Farcaster. |
-| `PRIVATE_KEY`, `ARBITRUM_SEPOLIA_RPC` | server (script) | Solo per `npm run setup-contract`. **Mai committare.** |
-
-Vedi [`.env.example`](./.env.example) per il template completo.
-
----
-
-## Scripts
-
-| Comando | Descrizione |
-|---------|-------------|
-| `npm run dev` | Avvia il dev server su `:5173`. |
-| `npm run build` | Build di produzione Next.js. |
-| `npm start` | Avvia l'app buildata su `:5173`. |
-| `npm run lint` | ESLint con la config di Next. |
-| `npm run typecheck` | `tsc --noEmit` su tutto il progetto. |
-| `npm run setup-contract` | Configura `baseImageURI` / `namePrefix` on-chain (solo owner). |
+| Area | Scelta | Perché |
+|------|--------|--------|
+| Framework | Next.js 14 (App Router) | Routing file-based, RSC, edge runtime per le immagini OG. |
+| Linguaggio | TypeScript strict | Type safety dal contratto al componente. |
+| Web3 | wagmi 2 + viem | API moderna e type-safe per Ethereum, SSR pronto. |
+| Wallets | Injected, Coinbase Wallet, WalletConnect | Copertura desktop/mobile senza vendor lock-in. |
+| Styling | TailwindCSS + CSS variables | Tema centralizzato, glassmorphism leggero. |
+| Mini App | `@farcaster/miniapp-sdk` | Integrazione con il feed Farcaster. |
+| Smart contract | Solidity 0.8.20 + OpenZeppelin | ERC-721 con tokenURI dinamico e proprietario. |
 
 ---
 
@@ -176,19 +82,6 @@ L'app è anche un Farcaster Frame:
   `next/og` sull'edge runtime.
 
 Il manifest Mini App è esposto su `/.well-known/farcaster.json`.
-
----
-
-## Deploy su Vercel
-
-1. Importa il repository su Vercel.
-2. Imposta le variabili d'ambiente (almeno `NEXT_PUBLIC_APP_URL`).
-3. Deploy. Il file [`vercel.json`](./vercel.json) imposta gli header corretti
-   per il Frame (no-cache) e il manifest Farcaster (CORS aperto).
-
-```bash
-vercel deploy --prod
-```
 
 ---
 
